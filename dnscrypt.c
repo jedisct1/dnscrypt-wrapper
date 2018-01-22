@@ -19,13 +19,11 @@ find_keypair(const struct context *c,
         if (memcmp(magic_query_ref, magic_query, DNSCRYPT_MAGIC_HEADER_LEN) == 0) {
             return &keypairs[i];
         }
-#ifdef HAVE_CRYPTO_BOX_CURVE25519XCHACHA20POLY1305_OPEN_EASY
         sodium_increment(magic_query_ref, sizeof magic_query_ref);
         if (memcmp(magic_query_ref, magic_query, DNSCRYPT_MAGIC_HEADER_LEN) == 0) {
             *use_xchacha20 = 1;
             return &keypairs[i];
         }
-#endif
     }
     if (memcmp(magic_query, CERT_OLD_MAGIC_HEADER, DNSCRYPT_MAGIC_HEADER_LEN) == 0) {
         return &keypairs[0];
@@ -218,11 +216,9 @@ dnscrypt_server_uncurve(struct context *c, const KeyPair *keypair,
         (struct dnscrypt_query_header *)buf;
     memcpy(nmkey, query_header->publickey, crypto_box_PUBLICKEYBYTES);
     if (use_xchacha20) {
-#ifdef HAVE_CRYPTO_BOX_CURVE25519XCHACHA20POLY1305_OPEN_EASY
         if (crypto_box_curve25519xchacha20poly1305_beforenm(nmkey, nmkey, keypair->crypt_secretkey) != 0) {
             return -1;
         }
-#endif
     } else {
         if (crypto_box_beforenm(nmkey, nmkey, keypair->crypt_secretkey) != 0) {
             return -1;
@@ -234,13 +230,11 @@ dnscrypt_server_uncurve(struct context *c, const KeyPair *keypair,
     memset(nonce + crypto_box_HALF_NONCEBYTES, 0, crypto_box_HALF_NONCEBYTES);
 
     if (use_xchacha20) {
-#ifdef HAVE_CRYPTO_BOX_CURVE25519XCHACHA20POLY1305_OPEN_EASY
         if (crypto_box_curve25519xchacha20poly1305_open_easy_afternm
             (buf, buf + DNSCRYPT_QUERY_BOX_OFFSET,
              len - DNSCRYPT_QUERY_BOX_OFFSET, nonce, nmkey) != 0) {
             return -1;
         }
-#endif
     } else {
         if (crypto_box_open_easy_afternm
             (buf, buf + DNSCRYPT_QUERY_BOX_OFFSET,
@@ -315,12 +309,10 @@ dnscrypt_server_curve(struct context *c,
     add_server_nonce(c, nonce);
 
     if (use_xchacha20) {
-#ifdef HAVE_CRYPTO_BOX_CURVE25519XCHACHA20POLY1305_OPEN_EASY
         if (crypto_box_curve25519xchacha20poly1305_easy_afternm
             (boxed, boxed + crypto_box_MACBYTES, len, nonce, nmkey) != 0) {
             return -1;
         }
-#endif
     } else {
         if (crypto_box_easy_afternm(boxed, boxed + crypto_box_MACBYTES,
                                     len, nonce, nmkey) != 0) {
