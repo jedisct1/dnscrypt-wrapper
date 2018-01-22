@@ -468,7 +468,7 @@ main(int argc, const char **argv)
                    "                 --resolver-address=%s\n"
                    "                 --provider-name=%s\n",
                    stamp,
-                   fingerprint, c.resolver_address, c.provider_name);
+                   fingerprint, c.ext_address, c.provider_name);
             if (write_to_file
                 (c.provider_publickey_file, (char *)provider_publickey,
                  crypto_sign_ed25519_PUBLICKEYBYTES) == 0
