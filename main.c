@@ -301,14 +301,14 @@ sodium_bin2base64(char * const b64, const size_t b64_maxlen,
 }
 #endif
 
-static char *create_stamp(const char *resolver_address, const unsigned char *provider_publickey,
+static char *create_stamp(const char *listen_address, const unsigned char *provider_publickey,
                           const char *provider_name, bool dnssec, bool nolog)
 {
     unsigned char *stamp_bin, *p;
     char *stamp;
     unsigned char props[8] = {0};
     size_t len;
-    size_t resolver_address_len = strlen(resolver_address),
+    size_t listen_address_len = strlen(listen_address),
            provider_publickey_len = crypto_sign_ed25519_PUBLICKEYBYTES,
            provider_name_len = strlen(provider_name);
 
@@ -316,14 +316,14 @@ static char *create_stamp(const char *resolver_address, const unsigned char *pro
         props[0] |= 1;
     if (nolog)
         props[1] |= 2;
-    len = 1 + 8 + 1 + resolver_address_len + 1 + provider_publickey_len + 1 + provider_name_len;
+    len = 1 + 8 + 1 + listen_address_len + 1 + provider_publickey_len + 1 + provider_name_len;
     if ((stamp_bin = malloc(len)) == NULL)
         exit(1);
     p = stamp_bin;
     *p++ = 0x01;
     memcpy(p, props, sizeof props); p += sizeof props;
-    *p++ = (unsigned char) resolver_address_len;
-    memcpy(p, resolver_address, resolver_address_len); p += resolver_address_len;
+    *p++ = (unsigned char) listen_address_len;
+    memcpy(p, listen_address, listen_address_len); p += listen_address_len;
     *p++ = (unsigned char) provider_publickey_len;
     memcpy(p, provider_publickey, provider_publickey_len); p += provider_publickey_len;
     *p++ = (unsigned char) provider_name_len;
@@ -444,9 +444,9 @@ main(int argc, const char **argv)
                     "Missing provider name. Ex: --provider-name=2.dnscrypt-cert.example.com\n");
             exit(1);
         }
-        if (!c.resolver_address) {
+        if (!c.listen_address || strcmp(c.listen_address, "0.0.0.0:443") == 0) {
             fprintf(stderr,
-                    "Missing resolver address. Ex: --resolver-address=192.168.1.1\n");
+                    "Missing listen address. Ex: --listen-address=192.168.1.1\n");
             exit(1);
         }
 
@@ -457,7 +457,7 @@ main(int argc, const char **argv)
             char *stamp;
 
             printf(" ok.\n");
-            stamp = create_stamp(c.resolver_address, provider_publickey, c.provider_name, dnssec, nolog);
+            stamp = create_stamp(c.listen_address, provider_publickey, c.provider_name, dnssec, nolog);
             dnscrypt_key_to_fingerprint(fingerprint, provider_publickey);
 
             printf("Stamp for dnscrypt-proxy 2.x:\n"
