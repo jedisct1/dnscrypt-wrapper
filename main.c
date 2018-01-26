@@ -353,7 +353,7 @@ static char *create_stamp(const char *ext_address, const unsigned char *provider
     unsigned char props[8] = {0};
     size_t len;
     size_t ext_address_len = strlen(ext_address),
-           provider_publickey_len = crypto_sign_ed25519_PUBLICKEYBYTES,
+           provider_publickey_len = crypto_sign_PUBLICKEYBYTES,
            provider_name_len = strlen(provider_name);
 
     if (dnssec)
@@ -471,8 +471,8 @@ main(int argc, const char **argv)
     c.keypairs = NULL;
 
     if (gen_provider_keypair) {
-        uint8_t provider_publickey[crypto_sign_ed25519_PUBLICKEYBYTES];
-        uint8_t provider_secretkey[crypto_sign_ed25519_SECRETKEYBYTES];
+        uint8_t provider_publickey[crypto_sign_PUBLICKEYBYTES];
+        uint8_t provider_secretkey[crypto_sign_SECRETKEYBYTES];
 
         if (!dnssec) {
             fprintf(stderr,
@@ -495,7 +495,7 @@ main(int argc, const char **argv)
 
         printf("Generate provider key pair...");
         fflush(stdout);
-        if (crypto_sign_ed25519_keypair(provider_publickey, provider_secretkey) == 0) {
+        if (crypto_sign_keypair(provider_publickey, provider_secretkey) == 0) {
             char fingerprint[80];
             char *stamp;
 
@@ -513,9 +513,9 @@ main(int argc, const char **argv)
                    fingerprint, c.ext_address, c.provider_name);
             if (write_to_file
                 (c.provider_publickey_file, (char *)provider_publickey,
-                 crypto_sign_ed25519_PUBLICKEYBYTES) == 0
+                 crypto_sign_PUBLICKEYBYTES) == 0
                 && write_to_pkey(c.provider_secretkey_file, (char *)provider_secretkey,
-                                 crypto_sign_ed25519_SECRETKEYBYTES) == 0) {
+                                 crypto_sign_SECRETKEYBYTES) == 0) {
                 printf("Keys are stored in %s & %s.\n",
                        c.provider_publickey_file, c.provider_secretkey_file);
                 exit(0);
@@ -559,7 +559,7 @@ main(int argc, const char **argv)
 
         if (read_from_file(c.provider_publickey_file,
                            (char *)c.provider_publickey,
-                           crypto_sign_ed25519_PUBLICKEYBYTES) != 0) {
+                           crypto_sign_PUBLICKEYBYTES) != 0) {
             logger(LOG_ERR, "Unable to read %s", c.provider_publickey_file);
             exit(1);
         }
@@ -650,10 +650,10 @@ main(int argc, const char **argv)
         }
         if (read_from_file
             (c.provider_publickey_file, (char *)c.provider_publickey,
-             crypto_sign_ed25519_PUBLICKEYBYTES) == 0
+             crypto_sign_PUBLICKEYBYTES) == 0
             && read_from_file(c.provider_secretkey_file,
                               (char *)c.provider_secretkey,
-                              crypto_sign_ed25519_SECRETKEYBYTES) == 0) {
+                              crypto_sign_SECRETKEYBYTES) == 0) {
         } else {
             logger(LOG_ERR, "Unable to load master keys from %s and %s.",
                    c.provider_publickey_file, c.provider_secretkey_file);
