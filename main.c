@@ -424,7 +424,7 @@ main(int argc, const char **argv)
                    "crypt secret key file (default: ./crypt_secret.key)"),
         OPT_INTEGER(0, "cert-file-expire-days", &cert_file_expire_days, "cert file expire days (default: 365)"),
         OPT_BOOLEAN(0, "nolog", &nolog, "Indicate that the server doesn't store logs"),
-        OPT_BOOLEAN(0, "nofilter", &dnssec, "Indicate that the server doesn't enforce its own blacklist"),
+        OPT_BOOLEAN(0, "nofilter", &nofilter, "Indicate that the server doesn't enforce its own blacklist"),
         OPT_BOOLEAN(0, "dnssec", &dnssec, "Indicate that the server supports DNSSEC"),
         OPT_STRING('a', "listen-address", &c.listen_address,
                    "local address to listen (default: 0.0.0.0:53)"),
