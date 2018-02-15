@@ -26,8 +26,9 @@ typedef struct UDPRequest_ {
     ev_socklen_t client_sockaddr_len;
     UDPRequestStatus status;
     unsigned char retries;
-    bool is_dnscrypted;
     bool use_xchacha20;
+    bool is_dnscrypted;
+    bool is_blocked;
 } UDPRequest;
 
 typedef TAILQ_HEAD(TCPRequestQueue_, TCPRequest_) TCPRequestQueue;

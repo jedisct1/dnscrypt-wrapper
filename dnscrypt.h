@@ -146,6 +146,9 @@ struct context {
     size_t keypairs_count;
     uint64_t nonce_ts_last;
     unsigned char hash_key[crypto_shorthash_KEYBYTES];
+
+    /* blocking */
+    struct Blocking_ *blocking;
 };
 
 const KeyPair * find_keypair(const struct context *c,

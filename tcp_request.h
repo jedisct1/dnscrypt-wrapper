@@ -30,8 +30,9 @@ typedef struct TCPRequest_ {
     size_t dns_query_len;
     size_t dns_reply_len;
     TCPRequestStatus status;
-    bool is_dnscrypted;
     bool use_xchacha20;
+    bool is_dnscrypted;
+    bool is_blocked;
 } TCPRequest;
 
 int tcp_listener_bind(struct context *c);
