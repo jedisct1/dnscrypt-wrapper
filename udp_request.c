@@ -319,7 +319,7 @@ client_to_proxy_cb(evutil_socket_t client_proxy_handle, short ev_flags,
     } else {
         if (dnscrypt_server_uncurve
             (c, keypair, udp_request->client_nonce, udp_request->nmkey, dns_query,
-             &dns_query_len, udp_request->use_xchacha20) != 0) {
+             &dns_query_len, udp_request->use_xchacha20) != 0 || dns_query_len < DNS_HEADER_SIZE) {
             logger(LOG_WARNING, "Received a suspicious query from the client");
             udp_request_kill(udp_request);
             return;
