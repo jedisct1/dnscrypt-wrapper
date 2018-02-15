@@ -477,7 +477,8 @@ resolver_to_proxy_cb(evutil_socket_t proxy_resolver_handle, short ev_flags,
         max_len = max_reply_size;
 
     if (udp_request->is_blocked) {
-        SET_RCODE((struct dns_header *) dns_reply, REFUSED);
+        struct dns_header *p = (struct dns_header *) dns_reply;
+        SET_RCODE(p, REFUSED);
     }
     maybe_truncate(dns_reply, &dns_reply_len, udp_request->len);
 
