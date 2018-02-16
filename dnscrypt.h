@@ -82,6 +82,7 @@
 #include "logger.h"
 #include "safe_rw.h"
 #include "cert.h"
+#include "ratelimit.h"
 
 #define DNSCRYPT_QUERY_HEADER_SIZE \
     (DNSCRYPT_MAGIC_HEADER_LEN + crypto_box_PUBLICKEYBYTES + crypto_box_HALF_NONCEBYTES + crypto_box_MACBYTES)
@@ -160,6 +161,9 @@ struct context {
 
     /* blocking */
     struct Blocking_ *blocking;
+
+    /* rate limit */
+    RateLimiter ratelimit;
 };
 
 const dnsccert * find_cert(const struct context *c,

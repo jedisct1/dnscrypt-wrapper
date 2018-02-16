@@ -1,5 +1,6 @@
 #include "dnscrypt.h"
 #include "block.h"
+#include "ratelimit.h"
 
 static void
 tcp_request_kill(TCPRequest *const tcp_request)
@@ -358,6 +359,9 @@ tcp_connection_cb(struct evconnlistener *const tcp_conn_listener,
     struct context *c = context;
     TCPRequest *tcp_request;
 
+    if (ratelimiter_hit(&c->ratelimit, client_sockaddr, 1000) != 0) {
+        return;
+    }
     (void)tcp_conn_listener;
     (void)client_sockaddr;
     (void)client_sockaddr_len_int;

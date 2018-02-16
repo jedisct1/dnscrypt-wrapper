@@ -3,6 +3,7 @@
 #include "version.h"
 #include "pidfile.h"
 #include "block.h"
+#include "ratelimit.h"
 
 /**
  * This is dnscrypt wrapper (server-side dnscrypt proxy), which helps to add
@@ -764,6 +765,13 @@ main(int argc, const char **argv)
         exit(1);
     }
 
+    unsigned char rkey[16];
+    randombytes_buf(rkey, sizeof rkey);
+    if (ratelimiter_init(&c.ratelimit, 10000, 100000, rkey) != 0) {
+        logger(LOG_ERR, "Unable to prepare the rate limiter");
+        exit(1);
+    }
+
     c.udp_listener_handle = -1;
     c.udp_resolver_handle = -1;
 
@@ -864,6 +872,7 @@ main(int argc, const char **argv)
     tcp_listener_stop(&c);
     event_base_free(c.event_loop);
     blocking_free(&c);
+    ratelimiter_free(&c.ratelimit);
 
     return 0;
 }

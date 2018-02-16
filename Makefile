@@ -93,6 +93,7 @@ LIB_OBJS += pidfile.o
 LIB_OBJS += debug.o
 LIB_OBJS += fpst.o
 LIB_OBJS += block.o
+LIB_OBJS += ratelimit.o
 
 DEP_LIBS += argparse/libargparse.a
 

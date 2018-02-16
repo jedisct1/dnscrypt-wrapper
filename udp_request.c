@@ -1,5 +1,6 @@
 #include "dnscrypt.h"
 #include "block.h"
+#include "ratelimit.h"
 
 typedef struct SendtoWithRetryCtx_ {
     void (*cb) (UDPRequest *udp_request);
@@ -289,6 +290,11 @@ client_to_proxy_cb(evutil_socket_t client_proxy_handle, short ev_flags,
                      0,
                      (struct sockaddr *)&udp_request->client_sockaddr,
                      &udp_request->client_sockaddr_len);
+    if (ratelimiter_hit(&c->ratelimit,
+                        (const struct sockaddr *) &udp_request->client_sockaddr, 1000) != 0) {
+        udp_request_kill(udp_request);
+        return;
+    }
     if (nread < 0) {
         const int err = evutil_socket_geterror(client_proxy_handle);
         if (!EVUTIL_ERR_RW_RETRIABLE(err)) {
