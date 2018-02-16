@@ -29,7 +29,7 @@ uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
 uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
 
 # CFLAGS and LDFLAGS are for users to override
-CFLAGS ?= -g -O2 -Wall
+CFLAGS ?= -g -O3 -Wall -fstack-protector-strong
 LDFLAGS ?=
 STRIP ?= strip
 
