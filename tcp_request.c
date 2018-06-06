@@ -198,7 +198,7 @@ client_proxy_read_cb(struct bufferevent *const client_proxy_bev,
         if (dnscrypt_server_uncurve
             (c, keypair, tcp_request->client_nonce, tcp_request->nmkey, dns_query,
              &dns_query_len, tcp_request->use_xchacha20) != 0 || dns_query_len < DNS_HEADER_SIZE) {
-            logger(LOG_WARNING, "Received a suspicious query from the client");
+            logger(LOG_DEBUG, "Received a suspicious query from the client");
             tcp_request_kill(tcp_request);
             return;
         }
