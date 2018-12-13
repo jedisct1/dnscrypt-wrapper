@@ -348,7 +348,7 @@ client_to_proxy_cb(evutil_socket_t client_proxy_handle, short ev_flags,
 
     udp_request->id = ntohs(header->id);
     if (questions_hash(&udp_request->hash, header, dns_query_len, c->namebuff, c->hash_key) != 0) {
-        logger(LOG_WARNING, "Received a suspicious query from the client");
+        logger(LOG_DEBUG, "Received a suspicious query from the client");
         udp_request_kill(udp_request);
         return;
     }
