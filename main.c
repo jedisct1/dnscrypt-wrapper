@@ -452,6 +452,7 @@ main(int argc, const char **argv)
     int verbose = 0;
     int use_xchacha20 = 0;
     int nolog = 0, dnssec = 0, nofilter = 0;
+    bool no_tcp = false, no_udp = false;
     struct argparse argparse;
     struct argparse_option options[] = {
         OPT_HELP(),
@@ -474,14 +475,16 @@ main(int argc, const char **argv)
                    "provider secret key file (default: ./secret.key)"),
         OPT_STRING(0, "crypt-secretkey-file", &c.crypt_secretkey_file,
                    "crypt secret key file (default: ./crypt_secret.key)"),
-        OPT_STRING(0, "cert-file-expire-days", &cert_file_expire_days, "cert file expire days (default: 1, 3d, 2h, 180s)"),
-        OPT_BOOLEAN(0, "nolog", &nolog, "Indicate that the server doesn't store logs"),
-        OPT_BOOLEAN(0, "nofilter", &nofilter, "Indicate that the server doesn't enforce its own blacklist"),
-        OPT_BOOLEAN(0, "dnssec", &dnssec, "Indicate that the server supports DNSSEC"),
+        OPT_STRING(0, "cert-file-expire-days", &cert_file_expire_days, "cert file expire days (1d, 2h, 30m, 180s, default: 1d)"),
+        OPT_BOOLEAN(0, "nolog", &nolog, "indicate that the server doesn't store logs"),
+        OPT_BOOLEAN(0, "nofilter", &nofilter, "indicate that the server doesn't enforce its own blacklist"),
+        OPT_BOOLEAN(0, "dnssec", &dnssec, "indicate that the server supports DNSSEC"),
         OPT_STRING('a', "listen-address", &c.listen_address,
                    "local address to listen (default: 0.0.0.0:53)"),
+        OPT_BOOLEAN(0, "no-udp", &no_udp, "do not listen on UDP"),
+        OPT_BOOLEAN(0, "no-tcp", &no_tcp, "do not listen on TCP"),
         OPT_STRING('b', "blacklist-file", &blacklist_file, "blacklist file"),
-        OPT_STRING('E', "ext-address", &c.ext_address, "External IP address"),
+        OPT_STRING('E', "ext-address", &c.ext_address, "external IP address"),
         OPT_STRING('r', "resolver-address", &c.resolver_address,
                    "upstream dns resolver server (<address:port>)"),
         OPT_STRING('o', "outgoing-address", &c.outgoing_address,
@@ -505,6 +508,15 @@ main(int argc, const char **argv)
 
     argparse_init(&argparse, options, config_usage, 0);
     argparse_parse(&argparse, argc, argv);
+
+    if (no_udp && no_tcp) {
+        fprintf(stderr,
+                "Error: UDP/TCP listeners are both disabled\n\n");
+        argparse_usage(&argparse);
+        exit(1);
+    }
+
+
     if (sodium_init() != 0) {
         return 1;
     }
@@ -854,12 +866,23 @@ main(int argc, const char **argv)
         exit(1);
     }
 
-    if (udp_listener_bind(&c) != 0 || tcp_listener_bind(&c) != 0) {
+	if (!no_udp && udp_listener_bind(&c) != 0) {
+        logger(LOG_ERR, "Failed to bind UDP listener on %s", c.listen_address);
+        exit(1);
+	}
+
+    if (!no_tcp && tcp_listener_bind(&c) != 0) {
+        logger(LOG_ERR, "Failed to bind TCP listener on %s", c.listen_address);
         exit(1);
     }
 
-    if (udp_listener_start(&c) != 0 || tcp_listener_start(&c) != 0) {
-        logger(LOG_ERR, "Unable to start udp listener.");
+    if (!no_udp && udp_listener_start(&c) != 0) {
+        logger(LOG_ERR, "Unable to start UDP listener on %s", c.listen_address);
+        exit(1);
+    }
+
+    if (!no_tcp && tcp_listener_start(&c) != 0) {
+        logger(LOG_ERR, "Unable to start TCP listener on %s", c.listen_address);
         exit(1);
     }
 
